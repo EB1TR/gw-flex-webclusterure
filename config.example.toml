@@ -10,6 +10,7 @@ timeout = 5
 reconnect_delay = 2
 ping_interval = 2
 
+# Destino Logger32: ajustar transporte y puerto a la interfaz utilizada.
 [logbook]
 protocol = "tcp"
 host = "127.0.0.1"

@@ -3,7 +3,7 @@
 ## Proyecto
 
 Conector Python entre Webcluster (WebSocket), FlexRadio (TCP) y un libro de
-guardia (UDP o TCP). El código de la aplicación está en `app.py`; no hay un
+guardia Logger32 (transporte implementado UDP o TCP). El código de la aplicación está en `app.py`; no hay un
 frontend en este directorio.
 
 El contrato con el frontend está documentado en `PROTOCOLO_WEBCLUSTER.md`.
@@ -20,6 +20,8 @@ implementadas.
   comandos FlexRadio, envío al logbook y servidor WebSocket asíncrono.
 - `config.toml`: configuración local de los servicios y del diagnóstico.
 - `requirements.txt`: dependencia WebSocket para instalaciones nuevas.
+- `Dockerfile`, `.dockerignore` y `compose.yaml`: contenedor basado en Python
+  Alpine, con configuración externa y un único proceso de aplicación.
 - `.venv/`: entorno local existente; no editar sus archivos ni incluirlo en
   entregas.
 - Se requiere Python 3.11 o posterior por el uso de `tomllib`, y la dependencia
@@ -59,6 +61,9 @@ de la petición del usuario. La validación la realiza personalmente el usuario.
 - Conservar la distinción entre enviar un datagrama UDP y confirmar su
   recepción. Tampoco presentar una escritura TCP como confirmación de que el
   libro de guardia ha procesado el registro.
+- El logbook de destino es Logger32. No asumir que el envío de ADIF crudo o
+  una respuesta de transporte equivalen a su protocolo de integración o a
+  confirmación de registro; documentar por separado lo pendiente de concretar.
 - Respetar el cierre de conexiones, las tareas asíncronas y las notificaciones
   `alive` al modificar el ciclo de vida de las conexiones.
 - `APP_CONFIG` contiene la configuración del proceso. El estado CAT pertenece
@@ -66,6 +71,10 @@ de la petición del usuario. La validación la realiza personalmente el usuario.
 - No sustituir direcciones, puertos ni preferencias de `config.toml` por valores
   del entorno de pruebas. Mantener la escucha local predeterminada.
 - Mantener los mensajes al usuario y la documentación en español.
+- Mantener ligera la imagen: no incluir configuración local, entornos Python,
+  cachés ni herramientas de desarrollo. El puerto publicado en Compose debe
+  coincidir con el puerto WebSocket configurado. La escucha `0.0.0.0` se limita
+  al arranque del contenedor mediante `--ws-host`.
 
 ## Validación
 

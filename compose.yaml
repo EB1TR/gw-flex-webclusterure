@@ -1,0 +1,30 @@
+services:
+  gateway:
+    build: .
+    image: gw-flex-webclusterure:local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:12063:12063"
+    volumes:
+      - type: bind
+        source: ./config.toml
+        target: /config/config.toml
+        read_only: true
+        bind:
+          create_host_path: false
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 64m
+    cpus: 0.5
+    pids_limit: 32
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"

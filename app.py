@@ -9,6 +9,7 @@ import math
 import os
 import sys
 import re
+import signal
 import socket
 import tomllib
 from datetime import datetime
@@ -491,24 +492,34 @@ async def main():
     report(f"WebSocket: ws://{APP_CONFIG.ws_host}:{APP_CONFIG.ws_port}")
     report(f"Logbook: {APP_CONFIG.logbook_protocol.upper()} {APP_CONFIG.logbook_host}:{APP_CONFIG.logbook_port}")
     radio_task = None
+    stopped = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    # Docker envía SIGTERM al detener el contenedor.
+    with contextlib.suppress(NotImplementedError):
+        loop.add_signal_handler(signal.SIGTERM, stopped.set)
     try:
         async with websockets.serve(gateway.handle_client, APP_CONFIG.ws_host, APP_CONFIG.ws_port):
             radio_task = asyncio.create_task(gateway.radio.run())
-            await asyncio.Future()
+            await stopped.wait()
     finally:
         if radio_task:
             radio_task.cancel()
             await asyncio.gather(radio_task, return_exceptions=True)
+        with contextlib.suppress(NotImplementedError):
+            loop.remove_signal_handler(signal.SIGTERM)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="GW WebClusterURE ↔ FlexRadio y logbook")
     parser.add_argument("--config", default=str(Path(__file__).with_name("config.toml")), help="ruta al TOML de configuración")
+    parser.add_argument("--ws-host", help="dirección de escucha WebSocket; sobrescribe el TOML")
     parser.add_argument("--quiet", action="store_true", help="ocultar el intercambio de mensajes")
     parser.add_argument("--verbose", action="store_true", help="mostrar todo el intercambio")
     args = parser.parse_args()
     try:
         APP_CONFIG = load_config(args.config)
+        if args.ws_host is not None:
+            APP_CONFIG.ws_host = args.ws_host
         # El arranque normal muestra tráfico aunque la configuración antigua lo silencie.
         APP_CONFIG.verbose = not args.quiet
         if args.verbose:

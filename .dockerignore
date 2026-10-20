@@ -1,0 +1,6 @@
+# Solo estos archivos son necesarios para construir la imagen.
+**
+!Dockerfile
+!.dockerignore
+!app.py
+!requirements.txt

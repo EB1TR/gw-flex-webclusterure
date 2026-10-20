@@ -24,11 +24,15 @@ La comparación con el GW corresponde a `app.py` de este directorio.
 
 ```text
 WebClusterURE ── WebSocket JSON ── GW app.py ── TCP ── FlexRadio
-                                      └──── UDP/TCP ── Logbook
+                                      └──── UDP/TCP ── Logger32
 ```
 
 La web es el cliente WebSocket y el GW es el servidor. La web configura solo
 el host y puerto del GW; los destinos FlexRadio y logbook se configuran en el GW.
+El logbook de destino es **Logger32**, según la especificación del usuario.
+Las referencias a «logbook» en este documento identifican ese destino. TCP y
+UDP describen los transportes disponibles en el GW actual, sin afirmar que
+ambos implementen el protocolo de integración requerido por Logger32.
 El frontend guarda sus preferencias mediante `ClientStateService`, clave
 `webclusterConnectorConfig`:
 
@@ -291,6 +295,11 @@ existente en `.venv/bin/python`. Para una instalación nueva, instalar primero
 La configuración predeterminada se busca junto a `app.py`, independientemente
 del directorio desde el que se ejecute. `--config` permite indicar otra ruta;
 `--quiet` oculta el tráfico y `--verbose` lo habilita explícitamente.
+`--ws-host` permite sobrescribir la dirección de escucha WebSocket sin cambiar
+el TOML. El contenedor utiliza `--ws-host 0.0.0.0` y monta la configuración en
+`/config/config.toml`; Compose publica el puerto solo en el loopback del host.
+El proceso atiende SIGTERM para cerrar las conexiones al detener el contenedor.
+Las instrucciones de construcción y ejecución están en `README.md`.
 
 Los destinos actuales de `config.toml` se conservan. Parámetros opcionales:
 
@@ -311,7 +320,8 @@ la espera entre bloques recibidos. Se muestran las respuestas TCP durante esa
 conexión y, en UDP, la primera respuesta al mismo socket de envío. Si no llegan,
 se muestra el fin del plazo. No se implementa un receptor permanente de eventos
 espontáneos del logbook, ni un protocolo de sincronización de QSO de vuelta a
-la web. Para eso se necesita especificar qué programa de log y qué protocolo usa.
+la web. Para eso falta concretar la interfaz de Logger32 utilizada, su formato
+de mensajes y sus confirmaciones; el programa de destino ya está identificado.
 
 ## Validación
 

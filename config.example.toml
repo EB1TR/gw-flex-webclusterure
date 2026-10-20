@@ -1,0 +1,22 @@
+# Copiar a config.toml y ajustar los destinos locales.
+[websocket]
+host = "127.0.0.1"
+port = 12063
+
+[flex]
+host = "127.0.0.1"
+port = 4992
+timeout = 5
+reconnect_delay = 2
+ping_interval = 2
+
+[logbook]
+protocol = "tcp"
+host = "127.0.0.1"
+port = 52001
+timeout = 5
+response_timeout = 1
+
+[debug]
+verbose = true
+level = 2

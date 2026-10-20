@@ -1,0 +1,43 @@
+# Configuración local y secretos
+config.toml
+config.local.toml
+.env
+.env.*
+certs/
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.csr
+*.srl
+*.jks
+*.keystore
+credentials*
+secrets*
+
+# Entornos y archivos generados
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+
+# Cachés y empaquetado Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Archivos temporales de editores
+*.swp
+*.swo
+*~
+.idea/

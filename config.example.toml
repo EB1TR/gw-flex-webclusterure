@@ -19,5 +19,6 @@ timeout = 5
 response_timeout = 1
 
 [debug]
-verbose = true
+# Activar solo durante el diagnóstico.
+verbose = false
 level = 2

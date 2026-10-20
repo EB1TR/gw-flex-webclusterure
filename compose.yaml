@@ -2,6 +2,8 @@ services:
   gateway:
     build: .
     image: gw-flex-webclusterure:local
+    # Para diagnóstico, sustituir por ["--verbose"].
+    command: ["--quiet"]
     restart: unless-stopped
     ports:
       - "127.0.0.1:12063:12063"

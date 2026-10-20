@@ -71,6 +71,9 @@ de la petición del usuario. La validación la realiza personalmente el usuario.
 - No sustituir direcciones, puertos ni preferencias de `config.toml` por valores
   del entorno de pruebas. Mantener la escucha local predeterminada.
 - Mantener los mensajes al usuario y la documentación en español.
+- En uso normal, registrar conexiones, reconexiones y errores sin volcar el
+  tráfico. Reservar `--verbose` para diagnóstico. Respetar `[debug]` cuando no
+  se especifica una opción de tráfico; mantener la rotación de Docker.
 - Mantener ligera la imagen: no incluir configuración local, entornos Python,
   cachés ni herramientas de desarrollo. El puerto publicado en Compose debe
   coincidir con el puerto WebSocket configurado. La escucha `0.0.0.0` se limita

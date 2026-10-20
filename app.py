@@ -29,7 +29,7 @@ DEFAULT_CONFIG = {
              "timeout": 5, "reconnect_delay": 2, "ping_interval": 2},
     "logbook": {"protocol": "udp", "host": "127.0.0.1", "port": 2237,
                 "timeout": 5, "response_timeout": 1},
-    "debug": {"verbose": True, "level": 2},
+    "debug": {"verbose": False, "level": 2},
 }
 
 
@@ -434,6 +434,8 @@ class Gateway:
                         result["message"] = "Comandos aceptados por FlexRadio"
                     except Exception as exc:
                         result["message"] = str(exc) or type(exc).__name__
+                if not result["ok"]:
+                    report(f"{'Logger32' if topic == 'log' else 'CAT'}: {result.get('message', 'Operación no confirmada')}")
                 await self.send(websocket, result)
             finally:
                 queue.task_done()
@@ -481,9 +483,11 @@ class Gateway:
                 try:
                     queue.put_nowait(message)
                 except asyncio.QueueFull:
+                    report(f"Cola {topic} llena; operación no enviada")
                     await self.send(websocket, {"topic": topic, "type": "commandResult" if topic == "cat" else "sendResult",
                                                 "id": message.get("id", ""), "ok": False, "message": "Cola llena; operación no enviada"})
             except (ValueError, TypeError) as exc:
+                report(f"Mensaje web rechazado: {exc}")
                 await self.send(websocket, {"topic": "connector", "type": "error", "message": str(exc)})
 
 
@@ -513,18 +517,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="GW WebClusterURE ↔ FlexRadio y logbook")
     parser.add_argument("--config", default=str(Path(__file__).with_name("config.toml")), help="ruta al TOML de configuración")
     parser.add_argument("--ws-host", help="dirección de escucha WebSocket; sobrescribe el TOML")
-    parser.add_argument("--quiet", action="store_true", help="ocultar el intercambio de mensajes")
-    parser.add_argument("--verbose", action="store_true", help="mostrar todo el intercambio")
+    traffic = parser.add_mutually_exclusive_group()
+    traffic.add_argument("--quiet", action="store_true", help="ocultar el intercambio; mantener conexiones y errores")
+    traffic.add_argument("--verbose", action="store_true", help="mostrar todo el intercambio para diagnóstico")
     args = parser.parse_args()
     try:
         APP_CONFIG = load_config(args.config)
         if args.ws_host is not None:
             APP_CONFIG.ws_host = args.ws_host
-        # El arranque normal muestra tráfico aunque la configuración antigua lo silencie.
-        APP_CONFIG.verbose = not args.quiet
-        if args.verbose:
+        if args.quiet:
+            APP_CONFIG.verbose = False
+        elif args.verbose:
             APP_CONFIG.verbose = True
-        APP_CONFIG.debug_level = 2
+            APP_CONFIG.debug_level = 2
         asyncio.run(main())
     except KeyboardInterrupt:
         report("GW detenido")

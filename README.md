@@ -25,9 +25,21 @@ python3 app.py
 ```
 
 Si el intérprete no dispone de `websockets`, la aplicación utiliza el entorno
-local `.venv` cuando existe. Muestra el tráfico en ambos sentidos con la web,
-la radio y el logbook. `--quiet` permite ocultarlo y `--config ruta.toml`
+local `.venv` cuando existe. Por defecto registra conexiones, reconexiones y
+errores, sin mostrar los mensajes intercambiados. `--config ruta.toml` permite
 seleccionar otro archivo de configuración.
+
+Para diagnosticar el intercambio en ambos sentidos con la web, FlexRadio y
+Logger32:
+
+```sh
+python3 app.py --verbose
+```
+
+Sin opciones de tráfico se respeta `[debug].verbose` y `[debug].level` del TOML.
+`--quiet` fuerza la ocultación del intercambio; `--verbose` lo activa completo
+con nivel 2. Las dos opciones son excluyentes. Ninguna oculta los avisos de
+conexión ni los errores de operaciones.
 
 En WebClusterURE, configurar el conector hacia `ws://127.0.0.1:12063` cuando
 el navegador y el GW están en el mismo equipo. Activar la delegación CAT o el
@@ -36,7 +48,7 @@ comparte ese enlace entre los clientes web.
 
 El envío TCP al logbook acredita la escritura de bytes, no que el programa haya
 guardado el QSO. UDP se informa como envío sin confirmación. Las respuestas del
-logbook se muestran durante la ventana de recepción configurada.
+logbook se muestran en modo diagnóstico durante la ventana de recepción configurada.
 
 ## Contenedor ligero
 
@@ -62,7 +74,11 @@ Para detenerlo:
 docker compose down
 ```
 
-El tráfico se muestra en ambos sentidos, igual que en la ejecución directa.
+Compose utiliza `command: ["--quiet"]` para el funcionamiento normal. Para
+diagnosticar, sustituirlo temporalmente por `command: ["--verbose"]` y recrear
+solo el servicio con `docker compose up -d --no-deps gateway`. Después restaurar
+`--quiet` y recrearlo de nuevo. En modo normal no se imprimen los `ping`, sus
+respuestas ni los estados CAT periódicos; se siguen enviando por la red.
 El proceso recibe SIGTERM para cerrar sus conexiones al detener el contenedor.
 Los registros de Docker se rotan en dos archivos de hasta 5 MB cada uno.
 
@@ -100,7 +116,8 @@ docker run --rm --name gw-flex-webclusterure \
   gw-flex-webclusterure:local
 ```
 
-Para ocultar el tráfico, añadir `--quiet` al final del comando `docker run`.
+Para mostrar el tráfico, añadir `--verbose` al final del comando `docker run`;
+para forzar el modo normal aunque el TOML habilite diagnóstico, añadir `--quiet`.
 La construcción y el funcionamiento del contenedor quedan pendientes de la
 validación manual del usuario.
 

@@ -284,7 +284,9 @@ del frontend son independientes de la implementación del GW.
 python3 app.py
 ```
 
-Muestra fecha, hora y dirección de todos los mensajes, sin truncar el contenido:
+Por defecto registra conexiones, reconexiones y errores, sin imprimir el tráfico.
+Para diagnosticar, ejecutar `python3 app.py --verbose`. En ese modo muestra
+fecha, hora y dirección de todos los mensajes, sin truncar el contenido:
 `web -> GW`, `GW -> web`, `GW -> FlexRadio`, `FlexRadio -> GW`,
 `GW -> logbook TCP/UDP` y `logbook TCP/UDP -> GW`. Los bytes no UTF-8 se
 representan mediante escapes. Los saltos de línea se muestran como `\n`.
@@ -294,7 +296,14 @@ existente en `.venv/bin/python`. Para una instalación nueva, instalar primero
 `requirements.txt` en el entorno Python elegido. Se requiere Python 3.11+.
 La configuración predeterminada se busca junto a `app.py`, independientemente
 del directorio desde el que se ejecute. `--config` permite indicar otra ruta;
-`--quiet` oculta el tráfico y `--verbose` lo habilita explícitamente.
+Sin opciones de tráfico se respetan `[debug].verbose` (predeterminado `false`)
+y `[debug].level` del TOML. `--quiet` oculta el tráfico y `--verbose` lo habilita
+explícitamente con nivel 2; son opciones excluyentes. En ambos casos se
+mantienen los avisos de conexión, reconexión y errores de operaciones. Ocultar
+los registros no desactiva los ping ni la publicación periódica de estado.
+Compose utiliza `command: ["--quiet"]`; para diagnóstico se sustituye por
+`command: ["--verbose"]` y se recrea el servicio. La rotación conserva dos
+archivos de hasta 5 MB por contenedor.
 `--ws-host` permite sobrescribir la dirección de escucha WebSocket sin cambiar
 el TOML. El contenedor utiliza `--ws-host 0.0.0.0` y monta la configuración en
 `/config/config.toml`; Compose publica el puerto solo en el loopback del host.
